@@ -32,8 +32,6 @@ services:
       POSTGRES_USER: auth_user
       POSTGRES_PASSWORD: auth_password
       POSTGRES_DB: auth_db
-    ports:
-      - "5433:5432" # optional, for host access
     volumes:
       - auth-db-data:/var/lib/postgresql/data
 
@@ -58,8 +56,6 @@ services:
       POSTGRES_USER: movies_user
       POSTGRES_PASSWORD: movies_password
       POSTGRES_DB: movies_db
-    ports:
-      - "5433:5432" # optional, for host access
     volumes:
       - movies-db-data:/var/lib/postgresql/data
   

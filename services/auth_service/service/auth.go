@@ -2,11 +2,14 @@ package service
 
 import (
 	"context"
+	"errors"
+	"os"
+	"time"
 
 	"github.com/piyushsharma67/movie_booking/services/auth_service/databases"
 	"github.com/piyushsharma67/movie_booking/services/auth_service/models"
 	"github.com/piyushsharma67/movie_booking/services/auth_service/repository"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/piyushsharma67/movie_booking/services/auth_service/utils"
 )
 
 type AuthService interface {
@@ -23,46 +26,78 @@ func NewAuthService(repo *repository.UserRepository) AuthService {
 }
 
 func (s *authService) SignUp(ctx context.Context, user models.User) (models.User, error) {
-	hash, _ := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), 10)
-	user.PasswordHash = string(hash)
-	user.Role = "user"
-
-	userDB:=&databases.User{
-		Name:         user.Name,
-		Email:        user.Email,
-		PasswordHash: user.PasswordHash,
-		Role:         user.Role,
-	}
-
-	if err := s.repo.InsertUser(ctx, userDB); err != nil {
+	// 1. Hash password
+	hashedPassword, err := utils.HashPassword(user.Password)
+	if err != nil {
 		return models.User{}, err
 	}
-	
-	return user, nil
+
+	// 2. Prepare DB model
+	userDB := &databases.User{
+		Name:         user.Name,
+		Email:        user.Email,
+		PasswordHash: hashedPassword,
+		Role:         "user",
+	}
+	ctxNew, cancel := context.WithTimeout(ctx, 1*time.Second)
+
+	defer cancel()
+
+	// 3. Insert into DB
+	if err := s.repo.InsertUser(ctxNew, userDB); err != nil {
+		return models.User{}, err
+	}
+
+	// 4. Generate JWT
+	token, err := utils.GenerateJWT(
+		userDB.ID,
+		userDB.Email,
+		userDB.Role,
+		os.Getenv("JWT_SECRET"),
+	)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	// 5. Return API response (NO password/hash)
+	return models.User{
+		ID:    userDB.ID,
+		Name:  userDB.Name,
+		Email: userDB.Email,
+		Role:  userDB.Role,
+		Token: token,
+	}, nil
 }
 
 func (s *authService) Login(ctx context.Context, user models.User) (models.User, error) {
-	hash, _ := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), 10)
-	user.PasswordHash = string(hash)
-	user.Role = "user"
-
+	// 1. Fetch user from DB
 	userDB, err := s.repo.GetUserByEmail(ctx, user.Email)
 	if err != nil {
 		return models.User{}, err
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(userDB.PasswordHash), []byte(user.PasswordHash)); err != nil {
+
+	// 2. Compare password
+	if err := utils.CheckPassword(user.Password, userDB.PasswordHash); err != nil {
+		return models.User{}, errors.New("invalid credentials")
+	}
+
+	// 3. Generate JWT
+	token, err := utils.GenerateJWT(
+		userDB.ID,
+		userDB.Email,
+		userDB.Role,
+		os.Getenv("JWT_SECRET"),
+	)
+	if err != nil {
 		return models.User{}, err
 	}
 
-	userFromDB:=models.User{
-		ID:           userDB.ID,
-		Name:         userDB.Name,
-		Email:        userDB.Email,
-		PasswordHash: userDB.PasswordHash,
-		Role:         userDB.Role,
-		Token:        userDB.Token,
-	}
-
-	return userFromDB, nil
+	// 4. Return response (NO password/hash)
+	return models.User{
+		ID:    userDB.ID,
+		Name:  userDB.Name,
+		Email: userDB.Email,
+		Role:  userDB.Role,
+		Token: token,
+	}, nil
 }
-

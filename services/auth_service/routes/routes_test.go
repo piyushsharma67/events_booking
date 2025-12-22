@@ -19,6 +19,7 @@ func setupSharedTestServer() *gin.Engine {
 	db := databases.NewSqliteDB(sqlDB)
 	repo := repository.NewUserRepository(db)
 	svc := service.NewAuthService(repo)
+	gin.SetMode(gin.TestMode) //setting so that we don't get debug logs during testing
 
 	return InitRoutes(svc)
 }

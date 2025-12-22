@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/piyushsharma67/movie_booking/services/auth_service/models"
@@ -91,6 +92,7 @@ func splitSQLStatements(sql string) []string {
 }
 
 func (s *SqlDb) InsertUser(ctx context.Context, user *models.User) error {
+	time.Sleep(2 * time.Second)
 	_, err := s.queries.CreateUser(ctx, postgresdb.CreateUserParams{
 		Name:         user.Name,
 		Email:        user.Email,
@@ -101,6 +103,8 @@ func (s *SqlDb) InsertUser(ctx context.Context, user *models.User) error {
 }
 
 func (s *SqlDb) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+
+	time.Sleep(2 * time.Second)
 	u, err := s.queries.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, err

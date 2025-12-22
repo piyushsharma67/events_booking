@@ -18,6 +18,7 @@ func InitRoutes(srv service.AuthService) *gin.Engine {
 		})
 	})
 	r.POST("/login", transport.GinHandler(endpoint.MakeLoginEndpoint(srv), func() interface{} { return &models.User{} }))
+	r.GET("/validate", transport.ValidateGinHandler(srv))
 
 	return r
 }

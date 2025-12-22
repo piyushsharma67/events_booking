@@ -36,3 +36,19 @@ func MakeLoginEndpoint(svc service.AuthService) endpoint.Endpoint {
 		return user, nil // your SQLC User struct can be returned directly
 	}
 }
+
+func MakeValidateEndpoint(svc service.AuthService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(*models.User)
+		user, err := svc.Login(ctx, *req)
+		if err != nil {
+			fmt.Println("**",err)
+			return struct {
+				Err string `json:"error"`
+			}{Err: err.Error()}, nil
+		}
+		return user, nil // your SQLC User struct can be returned directly
+	}
+}
+
+
