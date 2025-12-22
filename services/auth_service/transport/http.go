@@ -7,9 +7,10 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
-func GinHandler(e endpoint.Endpoint) gin.HandlerFunc {
+func GinHandler(e endpoint.Endpoint,newRequest func() interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var request interface{}
+		request = newRequest()
 
 		if err:=c.ShouldBindBodyWithJSON(request);err!=nil{
 			c.JSON(http.StatusBadRequest,gin.H{"error":err.Error()})

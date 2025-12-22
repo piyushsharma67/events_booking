@@ -13,36 +13,40 @@ type SqliteDb struct {
 	db *sql.DB
 }
 
-var (
-	once   sync.Once
-	testDB Database
-	err    error
-)
-
 func NewSqliteDB(db *sql.DB) Database {
 	return &SqliteDb{db: db}
 }
 
-func InitSqliteTestDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", ":memory:")
-	if err != nil {
-		return nil, err
-	}
 
-	schema := `
-	CREATE TABLE users (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT NOT NULL,
-		email TEXT UNIQUE NOT NULL,
-		password_hash TEXT NOT NULL,
-		role TEXT NOT NULL
-	);`
+var (
+	sharedDB *sql.DB
+	once     sync.Once
+)
 
-	if _, err := db.Exec(schema); err != nil {
-		return nil, err
-	}
+func InitSharedSqliteTestDB() *sql.DB {
+	once.Do(func() {
+		db, err := sql.Open("sqlite3", "file:test.db?cache=shared&mode=memory")
+		if err != nil {
+			panic(err)
+		}
 
-	return db, nil
+		schema := `
+		CREATE TABLE IF NOT EXISTS users (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL,
+			email TEXT UNIQUE NOT NULL,
+			password_hash TEXT NOT NULL,
+			role TEXT NOT NULL
+		);`
+
+		if _, err := db.Exec(schema); err != nil {
+			panic(err)
+		}
+
+		sharedDB = db
+	})
+
+	return sharedDB
 }
 
 func (s *SqliteDb) InsertUser(ctx context.Context, user *models.User) error {
@@ -58,7 +62,7 @@ func (s *SqliteDb) InsertUser(ctx context.Context, user *models.User) error {
 }
 
 func (s *SqliteDb) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
-	var u *models.User
+	u := &models.User{}
 	err := s.db.QueryRowContext(ctx,
 		`SELECT id, name, email, password_hash, role
 		 FROM users WHERE email = ?`,

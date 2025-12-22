@@ -28,7 +28,6 @@ func (s *authService) SignUp(ctx context.Context, user models.User) (models.User
 	user.Role = "user"
 
 	userDB:=&databases.User{
-		ID:           user.ID,
 		Name:         user.Name,
 		Email:        user.Email,
 		PasswordHash: user.PasswordHash,
