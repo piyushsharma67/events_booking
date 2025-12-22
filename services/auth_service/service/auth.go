@@ -18,10 +18,11 @@ type AuthService interface {
 
 type authService struct {
 	repo *repository.UserRepository
+	notifier *Notifier
 }
 
-func NewAuthService(repo *repository.UserRepository) AuthService {
-	return &authService{repo: repo}
+func NewAuthService(repo *repository.UserRepository,notifier *Notifier) AuthService {
+	return &authService{repo: repo,notifier: notifier}
 }
 
 func (s *authService) SignUp(ctx context.Context, user models.User) (models.User, error) {
