@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/smtp"
 	"os"
+	"time"
 
 	"github.com/streadway/amqp"
 )
@@ -18,6 +19,7 @@ type Notification struct {
 }
 
 func main() {
+	fmt.Println("Starting Notifier Service...")
 	// RabbitMQ connection
 	rabbitURL := fmt.Sprintf("amqp://%s:%s@%s:%s/",
 		getEnv("RABBITMQ_USER", "guest"),
@@ -26,10 +28,21 @@ func main() {
 		getEnv("RABBITMQ_PORT", "5672"),
 	)
 
-	conn, err := amqp.Dial(rabbitURL)
-	if err != nil {
-		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
+	var conn *amqp.Connection
+	var err error
+
+	for {
+		log.Println("🔄 Trying to connect to RabbitMQ...")
+		conn, err = amqp.Dial(rabbitURL)
+		if err != nil {
+			log.Println("RabbitMQ not ready, retrying in 5 seconds...")
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		break
 	}
+
+	log.Println("✅ Connected to RabbitMQ")
 	defer conn.Close()
 
 	ch, err := conn.Channel()
@@ -77,9 +90,9 @@ func main() {
 				log.Printf("Failed to parse message: %v", err)
 				continue
 			}
-
+			fmt.Println("notification is", notif)
 			if err := sendEmail(notif); err != nil {
-				log.Printf("Failed to send email: %v", err)
+				log.Printf("Failed to send email2: %v", err)
 			} else {
 				log.Printf("Email sent to %s", notif.To)
 			}
@@ -93,8 +106,9 @@ func main() {
 func sendEmail(n Notification) error {
 	smtpHost := getEnv("SMTP_HOST", "smtp.gmail.com")
 	smtpPort := getEnv("SMTP_PORT", "587")
-	smtpUser := getEnv("SMTP_USER", "your-email@gmail.com")
-	smtpPass := getEnv("SMTP_PASS", "your-password")
+	smtpUser := getEnv("SMTP_USER", "piyush67.sharma@gmail.com")
+	smtpPass := getEnv("SMTP_PASS", "hfhauloyfvuublyd")
+	fmt.Println("mesage is",n)
 
 	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s",
 		smtpUser, n.To, n.Subject, n.Body)

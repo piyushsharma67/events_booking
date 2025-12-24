@@ -27,6 +27,11 @@ func main() {
 	host := os.Getenv("RABBITMQ_HOST")
 	port := os.Getenv("RABBITMQ_PORT")
 	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/", user, pass, host, port))
+
+	if err != nil {
+		log.Fatalf("❌ failed to connect to rabbitmq: %v", err)
+	}
+	defer conn.Close()
 	notifier, err := service.NewRabbitMQNotifier(conn, "notifications")
 	if err != nil {
 		log.Fatal(err)

@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/streadway/amqp"
 )
@@ -11,8 +12,9 @@ type Notifier interface {
 }
 
 type MessageBrokerService struct {
-	ch  *amqp.Channel
-	que string
+	ch       *amqp.Channel
+	que      string
+	confirms <-chan amqp.Confirmation
 }
 
 func NewRabbitMQNotifier(conn *amqp.Connection, queue string) (*MessageBrokerService, error) {
@@ -20,6 +22,13 @@ func NewRabbitMQNotifier(conn *amqp.Connection, queue string) (*MessageBrokerSer
 	if err != nil {
 		return nil, err
 	}
+
+	// Enable publisher confirms
+	if err := ch.Confirm(false); err != nil {
+		return nil, err
+	}
+
+	confirms := ch.NotifyPublish(make(chan amqp.Confirmation, 1))
 
 	_, err = ch.QueueDeclare(
 		queue,
@@ -33,7 +42,7 @@ func NewRabbitMQNotifier(conn *amqp.Connection, queue string) (*MessageBrokerSer
 		return nil, err
 	}
 
-	return &MessageBrokerService{ch: ch, que: queue}, nil
+	return &MessageBrokerService{ch: ch, que: queue, confirms: confirms}, nil
 }
 
 type EmailNotification struct {
@@ -54,15 +63,26 @@ func (r *MessageBrokerService) SendNotification(to, subject, body string) error 
 		return err
 	}
 
-	return r.ch.Publish(
-		"",    // exchange (default)
-		r.que, // routing key = queue name
-		false, // mandatory
-		false, // immediate
+	err = r.ch.Publish(
+		"",
+		r.que,
+		false,
+		false,
 		amqp.Publishing{
 			ContentType:  "application/json",
-			DeliveryMode: amqp.Persistent, // survives broker restart
+			DeliveryMode: amqp.Persistent,
 			Body:         data,
 		},
 	)
+	if err != nil {
+		return err
+	}
+
+	// 🔴 THIS IS THE ACTUAL GUARANTEE
+	confirm := <-r.confirms
+	if !confirm.Ack {
+		return errors.New("rabbitmq did not acknowledge message")
+	}
+
+	return nil
 }

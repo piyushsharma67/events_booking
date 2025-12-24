@@ -75,6 +75,9 @@ services:
     container_name: notifier_service
     ports:
       - "8004:8004"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -82,6 +85,11 @@ services:
     ports:
       - "5672:5672"   # RabbitMQ messaging port
       - "15672:15672" # RabbitMQ management UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
