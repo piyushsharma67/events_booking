@@ -104,11 +104,10 @@ func main() {
 
 // sendEmail sends a simple email using SMTP
 func sendEmail(n Notification) error {
-	smtpHost := getEnv("SMTP_HOST", "smtp.gmail.com")
-	smtpPort := getEnv("SMTP_PORT", "587")
-	smtpUser := getEnv("SMTP_USER", "piyush67.sharma@gmail.com")
-	smtpPass := getEnv("SMTP_PASS", "hfhauloyfvuublyd")
-	fmt.Println("mesage is",n)
+	smtpHost := getEnv("SMTP_HOST")
+	smtpPort := getEnv("SMTP_PORT")
+	smtpUser := getEnv("SMTP_USER")
+	smtpPass := getEnv("SMTP_PASS")
 
 	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s",
 		smtpUser, n.To, n.Subject, n.Body)
@@ -118,10 +117,10 @@ func sendEmail(n Notification) error {
 }
 
 // getEnv fetches environment variable or returns fallback
-func getEnv(key, fallback string) string {
+func getEnv(key string) string {
 	val := os.Getenv(key)
 	if val == "" {
-		return fallback
+		return ""
 	}
 	return val
 }
