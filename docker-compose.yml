@@ -55,6 +55,7 @@ services:
       DB_PASSWORD: movies_password
       DB_NAME: movies_db
       DB_SSLMODE: disable
+      SERVER_PORT: "8003"
   movies-db:
     image: postgres:16
     container_name: movies-db

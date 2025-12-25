@@ -1,0 +1,13 @@
+{"time":"2025-12-25T17:07:29.28049217Z","level":"INFO","msg":"incoming request","service":"auth_service","env":"development","method":"POST","path":"/login"}
+{"time":"2025-12-25T17:07:29.280547956Z","level":"INFO","msg":"login request","service":"auth_service","env":"development","request_id":"8a2a1f6b7528e92344f9627050104283","user":""}
+{"time":"2025-12-25T17:07:31.342615751Z","level":"INFO","msg":"request completed","service":"auth_service","env":"development","status_code":200,"method":"POST","path":"/login"}
+{"time":"2025-12-25T17:17:11.539646504Z","level":"INFO","msg":"incoming request","service":"auth_service","env":"development","method":"POST","path":"/login"}
+{"time":"2025-12-25T17:17:11.539685826Z","level":"INFO","msg":"login request","service":"auth_service","env":"development","request_id":"8bb3cf850fa76c6eeac96f31392865fe","user":""}
+{"time":"2025-12-25T17:17:13.598694668Z","level":"INFO","msg":"request completed","service":"auth_service","env":"development","status_code":200,"method":"POST","path":"/login"}
+{"time":"2025-12-25T17:47:20.858961723Z","level":"INFO","msg":"incoming request","service":"auth_service","env":"development","method":"POST","path":"/login"}
+{"time":"2025-12-25T17:47:20.85903023Z","level":"INFO","msg":"login request","service":"auth_service","env":"development","request_id":"c9e5d10a3da2fb99eaee3cdc3f353c0c","user":""}
+{"time":"2025-12-25T17:47:22.924426456Z","level":"INFO","msg":"request completed","service":"auth_service","env":"development","status_code":200,"method":"POST","path":"/login"}
+{"time":"2025-12-25T17:53:48.252251907Z","level":"INFO","msg":"incoming request","service":"auth_service","env":"development","method":"POST","path":"/login"}
+{"time":"2025-12-25T17:53:48.252299155Z","level":"INFO","msg":"login request","service":"auth_service","env":"development","request_id":"3bc89727c53c85b00d9066b9aaff35f4","user":""}
+{"time":"2025-12-25T17:53:50.310986938Z","level":"INFO","msg":"request completed","service":"auth_service","env":"development","status_code":200,"method":"POST","path":"/login"}
+{"time":"2025-12-25T17:56:37.621746279Z","level":"INFO","msg":"jwt validated successfully","service":"auth_service","env":"development","status_code":200,"user_id":"9","role":"user","method":"GET","path":"/validate"}

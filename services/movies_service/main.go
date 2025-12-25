@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/piyushsharma67/movie_booking/services/movies_service/databases"
 	"github.com/piyushsharma67/movie_booking/services/movies_service/routes"
@@ -20,6 +21,6 @@ func main() {
 	// 3️⃣ Pass interface to routes
 	r := routes.InitialiseRoutes(db)
 
-	log.Println("Server running on :8001")
-	log.Fatal(http.ListenAndServe(":8001", r))
+	log.Println("Server running on :",os.Getenv("SERVER_PORT"))
+	log.Fatal(http.ListenAndServe(":"+os.Getenv("SERVER_PORT"), r))
 }

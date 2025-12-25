@@ -40,10 +40,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logger := logger.NewSlogLogger("auth_service", "development", slog.LevelInfo)
+	logger := logger.NewSlogFileLogger("auth_service", "development","./logs/auth_service/auth.log", slog.LevelInfo)
 
 	srv := service.NewAuthService(repository, notifier, logger)
-	r := routes.InitRoutes(srv)
+	r := routes.InitRoutes(srv,logger)
 
 	log.Println("Server running on :8001")
 	log.Fatal(http.ListenAndServe(":8001", r))

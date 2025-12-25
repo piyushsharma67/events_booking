@@ -20,7 +20,7 @@ func setupSharedTestServer() *gin.Engine {
 
 	db := databases.NewSqliteDB(sqlDB)
 	repo := repository.NewUserRepository(db)
-	logger:=logger.NewSlogLogger("auth_service_test","development",slog.LevelInfo)
+	logger := logger.NewSlogFileLogger("auth_service_test", "development", "./logs/auth_service_test/auth.log", slog.LevelInfo)
 
 	mockNotifier := &service.MockNotifier{}
 	svc := service.NewAuthService(repo, mockNotifier,logger)
