@@ -6,44 +6,63 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
-	"github.com/piyushsharma67/movie_booking/services/auth_service/databases"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/logger"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/repository"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/routes"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/service"
+	"github.com/piyushsharma67/events_booking/services/auth_service/databases"
+	"github.com/piyushsharma67/events_booking/services/auth_service/logger"
+	"github.com/piyushsharma67/events_booking/services/auth_service/repository"
+	"github.com/piyushsharma67/events_booking/services/auth_service/routes"
+	"github.com/piyushsharma67/events_booking/services/auth_service/service"
 	"github.com/streadway/amqp"
 )
 
 func main() {
+	logger := logger.NewSlogFileLogger("auth_service", "development", "./logs/auth_service/auth.log", slog.LevelInfo)
 
 	// 1️⃣ Initialize low-level DB (needs Close)
 	pgxpool, queries := databases.InitPostgres()
 	defer pgxpool.Close()
-
+	fmt.Println("yay")
 	// 2️⃣ Wrap with interface
 	db := databases.NewPostgresDB(queries)
+	fmt.Println("connected to database")
 	repository := repository.NewUserRepository(db)
 	user := os.Getenv("RABBITMQ_USER")
 	pass := os.Getenv("RABBITMQ_PASSWORD")
 	host := os.Getenv("RABBITMQ_HOST")
 	port := os.Getenv("RABBITMQ_PORT")
 
-	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/", user, pass, host, port))
+	var conn *amqp.Connection
+	var err error
+
+	rabbitmqDSN := fmt.Sprintf("amqp://%s:%s@%s:%s/", user, pass, host, port)
+
+	// Retry logic for RabbitMQ
+	for i := 0; i < 10; i++ {
+		conn, err = amqp.Dial(rabbitmqDSN)
+		if err == nil {
+			break
+		}
+		slog.Warn("RabbitMQ not ready, retrying...", "attempt", i+1, "error", err)
+		time.Sleep(3 * time.Second)
+	}
 
 	if err != nil {
-		log.Fatalf("❌ failed to connect to rabbitmq: %v", err)
+		log.Fatalf("❌ failed to connect to rabbitmq after retries: %v", err)
 	}
 	defer conn.Close()
+	fmt.Println("2")
 	notifier, err := service.NewRabbitMQNotifier(conn, "notifications")
 	if err != nil {
+		logger.Error("Error occured for auth service", "error", err.Error())
 		log.Fatal(err)
+
 	}
 
-	logger := logger.NewSlogFileLogger("auth_service", "development","./logs/auth_service/auth.log", slog.LevelInfo)
+	fmt.Println("3")
 
 	srv := service.NewAuthService(repository, notifier, logger)
-	r := routes.InitRoutes(srv,logger)
+	r := routes.InitRoutes(srv, logger)
 
 	log.Println("Server running on :8001")
 	log.Fatal(http.ListenAndServe(":8001", r))

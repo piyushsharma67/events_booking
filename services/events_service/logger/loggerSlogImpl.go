@@ -1,0 +1,76 @@
+package logger
+
+import (
+	"context"
+	"log/slog"
+	"os"
+	"path/filepath"
+)
+
+type slogLogger struct {
+	logger *slog.Logger
+}
+
+func NewSlogFileLogger(serviceName, env, path string, level slog.Level) Logger {
+	// Ensure parent directory exists
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		panic(err)
+	}
+
+	// Open or create log file
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	handler := slog.NewJSONHandler(f, &slog.HandlerOptions{
+		Level: level,
+	})
+
+	base := slog.New(handler).With(
+		"service", serviceName,
+		"env", env,
+	)
+
+	return &slogLogger{logger: base}
+}
+
+// Ensure at compile-time that slogLogger implements Logger
+var _ Logger = (*slogLogger)(nil)
+
+func (l *slogLogger) Info(msg string, keysAndValues ...any) {
+	l.logger.Info(msg, keysAndValues...)
+}
+
+func (l *slogLogger) Warn(msg string, keysAndValues ...any) {
+	l.logger.Warn(msg, keysAndValues...)
+}
+
+func (l *slogLogger) Error(msg string, keysAndValues ...any) {
+	l.logger.Error(msg, keysAndValues...)
+}
+
+func (l *slogLogger) With(fields ...any) Logger {
+	return &slogLogger{
+		logger: l.logger.With(fields...),
+	}
+}
+
+func (l *slogLogger) WithContext(ctx context.Context) Logger {
+	if ctx == nil {
+		return l
+	}
+
+	var fields []any
+
+	if reqID, ok := ctx.Value(RequestIDKey).(string); ok {
+		fields = append(fields, "request_id", reqID)
+	}
+
+	if len(fields) == 0 {
+		return l
+	}
+
+	return l.With(fields...)
+}

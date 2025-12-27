@@ -6,23 +6,21 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/piyushsharma67/movie_booking/services/auth_service/databases"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/logger"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/models"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/repository"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/utils"
+	"github.com/piyushsharma67/events_booking/services/auth_service/databases"
+	"github.com/piyushsharma67/events_booking/services/auth_service/logger"
+	"github.com/piyushsharma67/events_booking/services/auth_service/models"
+	"github.com/piyushsharma67/events_booking/services/auth_service/repository"
+	"github.com/piyushsharma67/events_booking/services/auth_service/utils"
 )
 
-
-
 type authService struct {
-	repo *repository.UserRepository
+	repo     *repository.UserRepository
 	notifier Notifier
-	logger logger.Logger
+	logger   logger.Logger
 }
 
-func NewAuthService(repo *repository.UserRepository,notifier Notifier,logger logger.Logger) AuthService {
-	return &authService{repo: repo,notifier: notifier,logger: logger}
+func NewAuthService(repo *repository.UserRepository, notifier Notifier, logger logger.Logger) AuthService {
+	return &authService{repo: repo, notifier: notifier, logger: logger}
 }
 
 func (s *authService) SignUp(ctx context.Context, user models.User) (models.User, error) {
@@ -100,10 +98,10 @@ func (s *authService) Login(ctx context.Context, user models.User) (models.User,
 		return models.User{}, err
 	}
 
-	err=s.notifier.SendNotification(userDB.Email,"Login Alert",fmt.Sprintf("Hi %s, You have successfully logged in.", userDB.Name))
+	err = s.notifier.SendNotification(userDB.Email, "Login Alert", fmt.Sprintf("Hi %s, You have successfully logged in.", userDB.Name))
 
-	if err!=nil{
-		return models.User{},nil
+	if err != nil {
+		return models.User{}, nil
 	}
 	// 4. Return response (NO password/hash)
 	return models.User{
@@ -115,7 +113,7 @@ func (s *authService) Login(ctx context.Context, user models.User) (models.User,
 	}, nil
 }
 
-func (s *authService)Notifier(ctx context.Context,user models.User)error{
+func (s *authService) Notifier(ctx context.Context, user models.User) error {
 	fmt.Println("i am called")
-	return s.notifier.SendNotification(user.Email,"Welcome",fmt.Sprintf("Hi %s Welome to the Booking Application", user.Name))
+	return s.notifier.SendNotification(user.Email, "Welcome", fmt.Sprintf("Hi %s Welome to the Booking Application", user.Name))
 }

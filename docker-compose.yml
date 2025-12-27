@@ -1,3 +1,11 @@
+networks:
+  apps_net:
+    name: z_internal_net  # Starting with 'z' forces it to the end of the list
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.20.30.0/24
+
 services:
   api-gateway:
     build: ./api-gateway
@@ -6,11 +14,15 @@ services:
     depends_on:
       - auth-service
       - booking-service
+      - events-service
+    networks:
+      - apps_net
+
 
   auth-service:
     build: ./services/auth_service
     volumes:
-    - ./services/auth_service:/app
+      - ./services/auth_service:/app
     container_name: auth_service
     ports:
       - "8001:8001"
@@ -25,12 +37,15 @@ services:
       DB_NAME: auth_db
       DB_SSLMODE: disable
       JWT_SECRET: sdf23423adsd
-      RABBITMQ_USER: guest
-      RABBITMQ_PASSWORD: guest
+      RABBITMQ_USER: appuser
+      RABBITMQ_PASSWORD: apppassword
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_QUEUE: notifications
-  
+    networks:
+      - apps_net
+
+
   auth-db:
     image: postgres:16
     container_name: auth-db
@@ -40,38 +55,53 @@ services:
       POSTGRES_DB: auth_db
     volumes:
       - auth-db-data:/var/lib/postgresql/data
+    networks:
+      - apps_net
+    ports:
+      - "5433:5432"
 
-  movie-service:
-    build: ./services/movies_service
-    container_name: movies_service
+
+  events-service:
+    build: ./services/events_service
+    container_name: events_service
     ports:
       - "8003:8003"
-    depends_on:
-      - movies-db
     environment:
-      DB_HOST: movies-db
-      DB_PORT: "5432"
-      DB_USER: movies_user
-      DB_PASSWORD: movies_password
-      DB_NAME: movies_db
+      DB_HOST: events-db
+      DB_PORT: 5432
+      DB_USER: events_user
+      DB_PASSWORD: events_password
+      DB_NAME: events_db
       DB_SSLMODE: disable
-      SERVER_PORT: "8003"
-  movies-db:
+      SERVER_PORT: 8003
+    networks:
+      - apps_net
+
+
+  events-db:
     image: postgres:16
-    container_name: movies-db
+    container_name: events-db
     environment:
-      POSTGRES_USER: movies_user
-      POSTGRES_PASSWORD: movies_password
-      POSTGRES_DB: movies_db
+      POSTGRES_USER: events_user
+      POSTGRES_PASSWORD: events_password
+      POSTGRES_DB: events_db
     volumes:
-      - movies-db-data:/var/lib/postgresql/data
-  
+      - events-db-data:/var/lib/postgresql/data
+    networks:
+      - apps_net
+
+
   booking-service:
     build: ./services/booking_service
     container_name: booking_service
     ports:
       - "8002:8002"
-      
+    environment:
+      SERVER_PORT: 8002
+    networks:
+      - apps_net
+
+
   notifier-service:
     build: ./services/notifier_service
     container_name: notifier_service
@@ -81,31 +111,34 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      - RABBITMQ_QUEUE=notifications
-      - RABBITMQ_USER=guest
-      - RABBITMQ_PASSWORD=guest
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
+      RABBITMQ_USER: appuser
+      RABBITMQ_PASSWORD: apppassword
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_QUEUE: notifications
+    networks:
+      - apps_net
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"   # RabbitMQ messaging port
-      - "15672:15672" # RabbitMQ management UI
+      - "5672:5672"
+      - "15672:15672"
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 5
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: appuser
+      RABBITMQ_DEFAULT_PASS: apppassword
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - apps_net
 
-  
 volumes:
   auth-db-data:
-  movies-db-data:
+  events-db-data:
   rabbitmq-data:

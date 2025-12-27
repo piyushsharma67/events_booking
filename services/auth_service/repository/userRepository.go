@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/piyushsharma67/movie_booking/services/auth_service/databases"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/models"
+	"github.com/piyushsharma67/events_booking/services/auth_service/databases"
+	"github.com/piyushsharma67/events_booking/services/auth_service/models"
 )
 
 type UserRepository struct {
@@ -16,7 +16,7 @@ func NewUserRepository(db databases.Database) *UserRepository {
 }
 
 func (r *UserRepository) InsertUser(ctx context.Context, user *databases.User) error {
-	userDB:=&models.User{
+	userDB := &models.User{
 		ID:           user.ID,
 		Name:         user.Name,
 		Email:        user.Email,
@@ -27,10 +27,10 @@ func (r *UserRepository) InsertUser(ctx context.Context, user *databases.User) e
 }
 
 func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*databases.User, error) {
-	user,err:=r.db.GetUserByEmail(ctx,email)
+	user, err := r.db.GetUserByEmail(ctx, email)
 
-	if err!=nil{
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
 	userDB := &databases.User{
 		ID:           user.ID,
@@ -39,5 +39,5 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*dat
 		PasswordHash: user.PasswordHash,
 		Role:         user.Role,
 	}
-	return userDB,nil
+	return userDB, nil
 }

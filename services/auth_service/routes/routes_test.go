@@ -8,10 +8,10 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/databases"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/logger"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/repository"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/service"
+	"github.com/piyushsharma67/events_booking/services/auth_service/databases"
+	"github.com/piyushsharma67/events_booking/services/auth_service/logger"
+	"github.com/piyushsharma67/events_booking/services/auth_service/repository"
+	"github.com/piyushsharma67/events_booking/services/auth_service/service"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,10 +23,10 @@ func setupSharedTestServer() *gin.Engine {
 	logger := logger.NewSlogFileLogger("auth_service_test", "development", "./logs/auth_service_test/auth.log", slog.LevelInfo)
 
 	mockNotifier := &service.MockNotifier{}
-	svc := service.NewAuthService(repo, mockNotifier,logger)
+	svc := service.NewAuthService(repo, mockNotifier, logger)
 	gin.SetMode(gin.TestMode) //setting so that we don't get debug logs during testing
 
-	return InitRoutes(svc,logger)
+	return InitRoutes(svc, logger)
 }
 
 func TestSignupAPI_SQLite(t *testing.T) {

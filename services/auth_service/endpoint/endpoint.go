@@ -2,7 +2,7 @@ package endpoint
 
 import (
 	"github.com/go-kit/kit/endpoint"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/service"
+	"github.com/piyushsharma67/events_booking/services/auth_service/service"
 )
 
 type Endpoints struct {

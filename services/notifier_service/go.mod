@@ -1,4 +1,4 @@
-module github.com/piyushsharma67/movie_booking/services/notifier_service
+module github.com/piyushsharma67/events_booking/services/notifier_service
 
 go 1.25.0
 

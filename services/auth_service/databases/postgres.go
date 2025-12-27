@@ -3,6 +3,8 @@ package databases
 import (
 	"bufio"
 	"context"
+	"fmt"
+	"log"
 	"log/slog"
 	"os"
 	"strconv"
@@ -10,8 +12,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/models"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/postgresdb"
+	"github.com/piyushsharma67/events_booking/services/auth_service/models"
+	"github.com/piyushsharma67/events_booking/services/auth_service/postgresdb"
 )
 
 type SqlDb struct {
@@ -37,14 +39,29 @@ func InitPostgres() (*pgxpool.Pool, *postgresdb.Queries) {
 
 	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Invalid DSN: %v", err)
+	}
+	// Wait until Postgres is ready
+	// THIS is where you must retry
+	for i := 0; i < 15; i++ {
+		fmt.Printf("Ping attempt %d...\n", i+1)
+
+		// Use a strict timeout for each ping attempt
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		err = pool.Ping(ctx)
+		cancel()
+
+		if err == nil {
+			fmt.Println("✅ Database is ready!")
+			queries := postgresdb.New(pool)
+			return pool, queries
+		}
+
+		fmt.Printf("Database not ready: %v. Retrying in 2s...\n", err)
+		time.Sleep(2 * time.Second)
 	}
 
-	// Wait until Postgres is ready
-	if err := pool.Ping(context.Background()); err != nil {
-		slog.Error("failed to connect to postgres:", "err", err)
-		os.Exit(1)
-	}
+	log.Fatal("❌ Database never became ready")
 
 	// Run schema.sql
 	content, err := os.ReadFile("postgresdb/schema.sql")

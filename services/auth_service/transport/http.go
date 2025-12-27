@@ -9,10 +9,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-kit/kit/endpoint"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/logger"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/service"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/utils"
+	"github.com/piyushsharma67/events_booking/services/auth_service/logger"
+	"github.com/piyushsharma67/events_booking/services/auth_service/service"
+	"github.com/piyushsharma67/events_booking/services/auth_service/utils"
 )
+
 func GinHandler(
 	e endpoint.Endpoint,
 	newRequest func() interface{},
@@ -87,7 +88,6 @@ func GinHandler(
 	}
 }
 
-
 func ValidateGinHandler(
 	svc service.AuthService,
 	logger logger.Logger,
@@ -151,4 +151,3 @@ func ValidateGinHandler(
 		c.Status(status)
 	}
 }
-

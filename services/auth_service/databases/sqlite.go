@@ -7,7 +7,7 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/models"
+	"github.com/piyushsharma67/events_booking/services/auth_service/models"
 )
 
 type SqliteDb struct {
@@ -18,12 +18,11 @@ func NewSqliteDB(db *sql.DB) Database {
 	return &SqliteDb{db: db}
 }
 
-
 var (
 	sharedDB *sql.DB
 
 	// 3. Insert i
-	once     sync.Once
+	once sync.Once
 )
 
 func InitSharedSqliteTestDB() *sql.DB {

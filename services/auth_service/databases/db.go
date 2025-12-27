@@ -2,7 +2,8 @@ package databases
 
 import (
 	"context"
-	"github.com/piyushsharma67/movie_booking/services/auth_service/models"
+
+	"github.com/piyushsharma67/events_booking/services/auth_service/models"
 )
 
 type User struct {
@@ -11,7 +12,7 @@ type User struct {
 	Email        string
 	PasswordHash string
 	Role         string
-	Token 	  string
+	Token        string
 }
 
 type Database interface {
