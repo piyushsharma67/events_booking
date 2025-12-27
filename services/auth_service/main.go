@@ -26,6 +26,7 @@ func main() {
 	// 2️⃣ Wrap with interface
 	db := databases.NewPostgresDB(queries)
 	fmt.Println("connected to database")
+	
 	repository := repository.NewUserRepository(db)
 	user := os.Getenv("RABBITMQ_USER")
 	pass := os.Getenv("RABBITMQ_PASSWORD")

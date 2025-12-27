@@ -52,16 +52,16 @@ func InitPostgres() (*pgxpool.Pool, *postgresdb.Queries) {
 		cancel()
 
 		if err == nil {
-			fmt.Println("✅ Database is ready!")
-			queries := postgresdb.New(pool)
-			return pool, queries
+			break
 		}
 
 		fmt.Printf("Database not ready: %v. Retrying in 2s...\n", err)
 		time.Sleep(2 * time.Second)
 	}
 
-	log.Fatal("❌ Database never became ready")
+	if err != nil {
+		log.Fatal("❌ Database never became ready")
+	}
 
 	// Run schema.sql
 	content, err := os.ReadFile("postgresdb/schema.sql")

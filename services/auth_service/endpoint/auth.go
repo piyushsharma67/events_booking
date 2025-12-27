@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"context"
+	"errors"
 
 	"github.com/go-kit/kit/endpoint"
 	"github.com/piyushsharma67/events_booking/services/auth_service/models"
@@ -11,6 +12,10 @@ import (
 func MakeSignUpEndpoint(svc service.AuthService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(*models.User)
+
+		if req.Email == "" || req.Password == "" || req.Name == "" {
+			return models.User{}, errors.New("User Name,Email and Password are required")
+		}
 
 		user, err := svc.SignUp(ctx, *req)
 		if err != nil {

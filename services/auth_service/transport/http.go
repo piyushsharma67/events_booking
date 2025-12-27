@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -26,6 +27,11 @@ func GinHandler(
 		if err := c.ShouldBindJSON(request); err != nil {
 			status := http.StatusBadRequest
 
+			msg := err.Error()
+			if errors.Is(err, io.EOF) {
+				msg = "request body is required"
+			}
+
 			logger.
 				WithContext(ctx).
 				Warn("invalid request body",
@@ -35,7 +41,7 @@ func GinHandler(
 					"path", c.Request.URL.Path,
 				)
 
-			c.JSON(status, gin.H{"error": err.Error()})
+			c.JSON(status, gin.H{"error": msg})
 			return
 		}
 

@@ -24,6 +24,10 @@ func NewAuthService(repo *repository.UserRepository, notifier Notifier, logger l
 }
 
 func (s *authService) SignUp(ctx context.Context, user models.User) (models.User, error) {
+
+	if user.Email=="" || user.Password=="" || user.Name==""{
+		return models.User{},errors.New("User Name,Email and Password are required")
+	}
 	// 1. Hash password
 	log := s.logger.WithContext(ctx)
 

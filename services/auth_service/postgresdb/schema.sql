@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS roles (
 );
 
 INSERT INTO roles (name, description) VALUES
-('user', 'Default user role'),
+('user', 'Can browse and book events'),
+('organizer', 'Can create and manage events'),
 ('admin', 'Administrator with full access')
 ON CONFLICT (name) DO NOTHING;

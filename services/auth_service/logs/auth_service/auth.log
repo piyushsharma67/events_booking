@@ -11,3 +11,17 @@
 {"time":"2025-12-25T17:53:48.252299155Z","level":"INFO","msg":"login request","service":"auth_service","env":"development","request_id":"3bc89727c53c85b00d9066b9aaff35f4","user":""}
 {"time":"2025-12-25T17:53:50.310986938Z","level":"INFO","msg":"request completed","service":"auth_service","env":"development","status_code":200,"method":"POST","path":"/login"}
 {"time":"2025-12-25T17:56:37.621746279Z","level":"INFO","msg":"jwt validated successfully","service":"auth_service","env":"development","status_code":200,"user_id":"9","role":"user","method":"GET","path":"/validate"}
+{"time":"2025-12-27T15:45:05.054503112Z","level":"WARN","msg":"invalid request body","service":"auth_service","env":"development","status_code":400,"error":"EOF","method":"POST","path":"/signup"}
+{"time":"2025-12-27T15:52:12.603262103Z","level":"WARN","msg":"invalid request body","service":"auth_service","env":"development","status_code":400,"error":"EOF","method":"POST","path":"/signup"}
+{"time":"2025-12-27T16:01:02.638591838Z","level":"WARN","msg":"invalid request body","service":"auth_service","env":"development","status_code":400,"error":"EOF","method":"POST","path":"/signup"}
+{"time":"2025-12-27T16:03:03.966406032Z","level":"WARN","msg":"invalid request body","service":"auth_service","env":"development","status_code":400,"error":"EOF","method":"POST","path":"/signup"}
+{"time":"2025-12-27T16:31:31.369370953Z","level":"WARN","msg":"invalid request body","service":"auth_service","env":"development","status_code":400,"error":"EOF","method":"POST","path":"/signup"}
+{"time":"2025-12-27T16:32:30.648718133Z","level":"INFO","msg":"incoming request","service":"auth_service","env":"development","method":"POST","path":"/signup"}
+{"time":"2025-12-27T16:32:30.648772194Z","level":"INFO","msg":"Signup started","service":"auth_service","env":"development","user":"piyush"}
+{"time":"2025-12-27T16:32:34.725006714Z","level":"ERROR","msg":"endpoint failed","service":"auth_service","env":"development","status_code":500,"error":"ERROR: relation \"users\" does not exist (SQLSTATE 42P01)"}
+{"time":"2025-12-27T16:40:08.107629136Z","level":"INFO","msg":"incoming request","service":"auth_service","env":"development","method":"POST","path":"/signup"}
+{"time":"2025-12-27T16:40:08.107681563Z","level":"INFO","msg":"Signup started","service":"auth_service","env":"development","user":"piyush"}
+{"time":"2025-12-27T16:40:12.18609002Z","level":"INFO","msg":"request completed","service":"auth_service","env":"development","status_code":200,"method":"POST","path":"/signup"}
+{"time":"2025-12-27T16:41:01.98611285Z","level":"INFO","msg":"incoming request","service":"auth_service","env":"development","method":"POST","path":"/login"}
+{"time":"2025-12-27T16:41:01.986157583Z","level":"INFO","msg":"login request","service":"auth_service","env":"development","request_id":"addf4b08d44cfa2efa460a5d7bc8603c","user":""}
+{"time":"2025-12-27T16:41:04.062859496Z","level":"INFO","msg":"request completed","service":"auth_service","env":"development","status_code":200,"method":"POST","path":"/login"}
