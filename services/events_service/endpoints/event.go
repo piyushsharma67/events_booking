@@ -8,10 +8,16 @@ import (
 	"github.com/piyushsharma67/events_booking/services/events_service/service"
 )
 
-func SignupEndpoint(srv *service.EventService) endpoint.Endpoint {
+func GenerateEvent(srv *service.EventService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		_ = request.(*models.Event)
+		event := request.(*models.Event)
 
-		return nil, nil // your SQLC User struct can be returned directly
+		genEvent,err:=srv.Repository.GenerateEvent(ctx,event)
+
+		if err!=nil{
+			return nil,err
+		}
+
+		return genEvent,nil
 	}
 }

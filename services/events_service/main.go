@@ -19,10 +19,15 @@ func main() {
 
 	/* genrating the db connection */
 	// 1️⃣ Initialize low-level DB (needs Close)
-	pgxpool, queries := database.InitPostgres()
-	defer pgxpool.Close()
+	// pgxpool, queries := database.InitPostgres()
+	// defer pgxpool.Close()
 
-	db:=database.NewSqldb(queries)
+	mongodbClient,close:=database.ConnectMongo()
+	defer close()
+	
+	db:=database.NewMongoDb(mongodbClient)
+
+	// db:=database.NewSqldb(queries)
 
 	repository:=repository.NewRepos(db)
 

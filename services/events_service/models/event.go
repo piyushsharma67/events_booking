@@ -12,6 +12,7 @@ type SeatingRowRequest struct {
 }
 
 type Event struct {
+	ID          string              `json:"id"`
 	Title       string              `json:"title" binding:"required"`
 	Description string              `json:"description"`
 	ImageURL    string              `json:"image_url"`

@@ -13,13 +13,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/piyushsharma67/events_booking/services/events_service/models"
 	"github.com/piyushsharma67/events_booking/services/events_service/postgresdb"
+	"github.com/piyushsharma67/events_booking/services/events_service/utils"
 )
 
 type Sqldb struct {
 	querries *postgresdb.Queries
 }
 
-func NewSqldb(querries *postgresdb.Queries) Database{
+func NewSqldb(querries *postgresdb.Queries) Database {
 	return &Sqldb{
 		querries: querries,
 	}
@@ -109,8 +110,45 @@ func splitSQLStatements(sql string) []string {
 	return stmts
 }
 
-func (s *Sqldb) GenerateEvent(ctx context.Context, event *models.Event) (models.Event, error) {
-	return models.Event{}, nil
+func (s *Sqldb) GenerateEvent(ctx context.Context, event *models.Event) (*models.Event, error) {
+	startTime, err := utils.GetPgTime(event.StartTime)
+
+	if err != nil {
+		return nil, err
+	}
+	endTime, err := utils.GetPgTime(event.EndTime)
+
+	if err != nil {
+		return nil, err
+	}
+	dbArg := postgresdb.CreateEventParams{
+		OrganizerID: 1,
+		Title:       event.Title,
+		Description: utils.ToText(event.Description),
+		Location:    event.Location,
+		ImageUrl:    utils.ToText(event.ImageURL),
+		StartTime:   startTime,
+		EndTime:     endTime,
+		Status:      utils.OPEN,
+	}
+	genRow, err := s.querries.CreateEvent(ctx, dbArg)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Event{
+		Description: genRow.Description.String,
+		Title:       event.Title,
+		ImageURL:    event.ImageURL,
+		Location:    event.Location,
+		StartTime:   event.StartTime,
+		ID:          event.ID,
+		EndTime:     event.EndTime,
+		Rows:        event.Rows,
+		Timestamps:  event.Timestamps,
+	}, nil
+
 }
 
 func (s *Sqldb) DeleteEvent(ctx context.Context, eventId any) error {

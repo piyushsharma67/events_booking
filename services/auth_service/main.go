@@ -22,7 +22,7 @@ func main() {
 	// 1️⃣ Initialize low-level DB (needs Close)
 	pgxpool, queries := databases.InitPostgres()
 	defer pgxpool.Close()
-	fmt.Println("yay")
+	
 	// 2️⃣ Wrap with interface
 	db := databases.NewPostgresDB(queries)
 	fmt.Println("connected to database")
@@ -52,16 +52,13 @@ func main() {
 		log.Fatalf("❌ failed to connect to rabbitmq after retries: %v", err)
 	}
 	defer conn.Close()
-	fmt.Println("2")
+	
 	notifier, err := service.NewRabbitMQNotifier(conn, "notifications")
 	if err != nil {
 		logger.Error("Error occured for auth service", "error", err.Error())
 		log.Fatal(err)
 
 	}
-
-	fmt.Println("3")
-
 	srv := service.NewAuthService(repository, notifier, logger)
 	r := routes.InitRoutes(srv, logger)
 
