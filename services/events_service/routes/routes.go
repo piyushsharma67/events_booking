@@ -4,8 +4,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/piyushsharma67/events_booking/services/events_service/endpoints"
+	"github.com/piyushsharma67/events_booking/services/events_service/logger"
 	"github.com/piyushsharma67/events_booking/services/events_service/middleware"
+	"github.com/piyushsharma67/events_booking/services/events_service/models"
 	"github.com/piyushsharma67/events_booking/services/events_service/service"
+	"github.com/piyushsharma67/events_booking/services/events_service/transport"
 )
 
 type RoutesStruct struct {
@@ -15,7 +19,7 @@ type RoutesStruct struct {
 
 func (r *RoutesStruct) InitialiseRoutes() *gin.Engine {
 
-	if r.ginEngine != nil {
+	if r.ginEngine == nil {
 		r.ginEngine = gin.Default()
 
 		return r.ginEngine
@@ -25,7 +29,7 @@ func (r *RoutesStruct) InitialiseRoutes() *gin.Engine {
 
 }
 
-func InitRoutes(service *service.EventService) *gin.Engine {
+func InitRoutes(service *service.EventService, logger logger.Logger) *gin.Engine {
 	r := gin.Default()
 	r.Use(gin.Logger())
 
@@ -35,10 +39,15 @@ func InitRoutes(service *service.EventService) *gin.Engine {
 		})
 	})
 
+	r.Use(func(c *gin.Context) {
+		logger.Info("Incoming request path:", c.Request.URL.Path)
+		c.Next()
+	})
+
 	organise := r.Group("organize")
 	organise.Use(middleware.RoleAuthMiddleware("organizer"))
 
-	organise.POST("/organise/create")
+	organise.POST("/create", transport.GinHandler(endpoints.GenerateEvent(service), func() interface{} { return &models.CreateEventRequest{} }, logger))
 
 	return r
 }

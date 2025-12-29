@@ -33,7 +33,7 @@ func main() {
 
 	srv:=service.GetEventService(*repository)
 
-	r:=routes.InitRoutes(srv)
+	r:=routes.InitRoutes(srv,logger)
 	
 
 	r.Run("0.0.0.0:8003")

@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"context"
+	"errors"
 
 	"github.com/go-kit/kit/endpoint"
 	"github.com/piyushsharma67/events_booking/services/events_service/models"
@@ -10,14 +11,19 @@ import (
 
 func GenerateEvent(srv *service.EventService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		event := request.(*models.Event)
-
-		genEvent,err:=srv.Repository.GenerateEvent(ctx,event)
-
-		if err!=nil{
-			return nil,err
+		event := request.(*models.CreateEventRequest)
+		// Get organizer ID from context
+		organizerID, ok := ctx.Value("user_id").(string)
+		if !ok || organizerID == "" {
+			return nil, errors.New("organizer ID not found in context")
 		}
 
-		return genEvent,nil
+		genEvent, err := srv.CreateEvent(ctx, event,organizerID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return genEvent, nil
 	}
 }

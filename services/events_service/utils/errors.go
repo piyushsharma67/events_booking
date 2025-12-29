@@ -1,0 +1,5 @@
+package utils
+
+const (
+	EVENT_ID_SHOULD_STRING="EVENT_ID_SHOULD_STRING"
+)
