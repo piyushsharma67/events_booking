@@ -1,16 +1,15 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
 	"net/smtp"
 	"os"
-	"strings"
 	"time"
 
+	"github.com/piyushsharma67/events_booking/services/notifier_service/utils.go"
 	"github.com/streadway/amqp"
 )
 
@@ -32,7 +31,7 @@ func initLogger() {
 
 func main() {
 	initLogger()
-	loadEnv()
+	utils.LoadEnv()
 
 	// RabbitMQ connection
 	rabbitURL := fmt.Sprintf("amqp://%s:%s@%s:%s/",
@@ -170,36 +169,4 @@ func getEnv(key string) string {
 		return ""
 	}
 	return val
-}
-
-func loadEnv() {
-	file, err := os.Open(".env")
-	if err != nil {
-		// .env does not exist → do nothing
-		return
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-
-		// Skip empty lines and comments
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) != 2 {
-			continue
-		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-
-		// Do not override existing env vars
-		if _, exists := os.LookupEnv(key); !exists {
-			_ = os.Setenv(key, value)
-		}
-	}
 }
