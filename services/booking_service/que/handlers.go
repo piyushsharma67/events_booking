@@ -36,7 +36,7 @@ func GenerateSeatsHandler(
 				seats = append(seats, domain.Seat{
 					EventID:    msg.EventID,
 					RowID:      r.Row,
-					SeatNumber: i,
+					SeatNumber: int32(i),
 					Status:     "AVAILABLE",
 				})
 			}

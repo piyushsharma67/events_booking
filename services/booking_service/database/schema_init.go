@@ -9,6 +9,9 @@ import (
 var schemaSQL string
 
 func initSchema(db *sql.DB) error {
-	_, err := db.Exec(schemaSQL)
-	return err
+	if schemaSQL == "" {
+        panic("schemaSQL is empty — embed not working")
+    }
+    _, err := db.Exec(schemaSQL)
+    return err
 }

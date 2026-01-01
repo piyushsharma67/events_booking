@@ -31,14 +31,14 @@ func main() {
 		Handler: r,
 	}
 
-	db,err:=database.NewPostgres()
-	if err!=nil{
+	db, err := database.NewPostgres()
+	if err != nil {
 		log.Fatal(err.Error())
+		os.Exit(1)
 	}
 
-	repository:=repository.InitialiseRepository(db)
-	srv:=service.InitialiseService(repository)
-
+	repository := repository.InitialiseRepository(db)
+	srv := service.InitialiseService(repository)
 
 	// ---------- RabbitMQ ----------
 	rabbitURL := utils.BuildRabbitURL()
@@ -50,9 +50,8 @@ func main() {
 	if err != nil {
 		log.Fatal("rabbitmq connection failed:", err)
 	}
-	
 
-	generateSeatsConsumer, err := que.NewBookingConsumer(conn, os.Getenv("RABBITMQ_QUEUE_GENERATE_SEATS"),que.GenerateSeatsHandler(srv))
+	generateSeatsConsumer, err := que.NewBookingConsumer(conn, os.Getenv("RABBITMQ_QUEUE_GENERATE_SEATS"), que.GenerateSeatsHandler(srv))
 	if err != nil {
 		log.Fatal("generate seats consumer init failed:", err)
 	}

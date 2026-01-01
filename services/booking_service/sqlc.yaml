@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - schema: "database/schema.sql"         # path to your schema
+    queries: "sqlc/queries/*.sql"        # path to queries
+    engine: "postgresql"
+    gen:
+      go:
+        package: "sqlc_gen"              # Go package name for generated code
+        out: "sqlc/sqlc_gen"             # output folder
+        emit_empty_slices: true
