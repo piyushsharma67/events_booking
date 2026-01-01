@@ -38,7 +38,7 @@ func (q *Queries) InsertMultipleSeats(ctx context.Context, arg InsertMultipleSea
 	return err
 }
 
-const insertSeat = `-- name: InsertSeat :one
+const insertSeat = `-- name: InsertSeat :exec
 INSERT INTO seats (id, event_id, row_id, seat_number, status)
 VALUES ($1, $2, $3, $4, $5)
 ON CONFLICT (event_id, row_id, seat_number) DO NOTHING
@@ -53,21 +53,13 @@ type InsertSeatParams struct {
 	Status     string
 }
 
-func (q *Queries) InsertSeat(ctx context.Context, arg InsertSeatParams) (Seat, error) {
-	row := q.db.QueryRowContext(ctx, insertSeat,
+func (q *Queries) InsertSeat(ctx context.Context, arg InsertSeatParams) error {
+	_, err := q.db.ExecContext(ctx, insertSeat,
 		arg.ID,
 		arg.EventID,
 		arg.RowID,
 		arg.SeatNumber,
 		arg.Status,
 	)
-	var i Seat
-	err := row.Scan(
-		&i.ID,
-		&i.EventID,
-		&i.RowID,
-		&i.SeatNumber,
-		&i.Status,
-	)
-	return i, err
+	return err
 }

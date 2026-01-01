@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/piyushsharma67/events_booking/services/booking_service/database"
 	"github.com/piyushsharma67/events_booking/services/booking_service/que"
@@ -46,12 +47,28 @@ func main() {
 		rabbitURL = "amqp://guest:guest@rabbitmq:5672/"
 	}
 
-	conn, err := amqp.Dial(rabbitURL)
-	if err != nil {
-		log.Fatal("rabbitmq connection failed:", err)
+	var conn *amqp.Connection
+
+	for i := 1; i <= 20; i++ {
+		conn, err = amqp.Dial(rabbitURL)
+		if err == nil {
+			log.Println("RabbitMQ connected")
+			break
+		}
+
+		log.Printf(
+			"RabbitMQ not ready (attempt %d/20): %v\n",
+			i,
+			err,
+		)
+		time.Sleep(2 * time.Second)
 	}
 
-	generateSeatsConsumer, err := que.NewBookingConsumer(conn, os.Getenv("RABBITMQ_QUEUE_GENERATE_SEATS"), que.GenerateSeatsHandler(srv))
+	if err != nil {
+		log.Fatal("RabbitMQ connection failed after retries:", err)
+	}
+
+	generateSeatsConsumer, err := que.NewBookingConsumer(conn, os.Getenv("RABBITMQ_QUEUE_SEATS"), que.GenerateSeatsHandler(srv))
 	if err != nil {
 		log.Fatal("generate seats consumer init failed:", err)
 	}

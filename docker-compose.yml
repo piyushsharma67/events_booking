@@ -37,6 +37,7 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_QUEUE: notifications
+      RABBITMQ_QUEUE_SEATS: seats
       SERVER_PORT: 8001
       MONGO_URI: mongodb://mongo_user:mongo_password@auth-db-mongo:27017/auth_db?authSource=admin
       DATABASE_NAME: UTH_db
@@ -64,42 +65,8 @@ services:
       timeout: 5s
       retries: 5
     command: ["mongod", "--quiet"]
-
-  events-service:
-    build: ./services/events_service
-    container_name: events_service
-    ports:
-      - "8003:8003"
-    environment:
-      SERVER_PORT: 8003
-      MONGO_URI: mongodb://mongo_user:mongo_password@events-db-mongo:27017/events_db?authSource=admin
-      DATABASE_NAME: events_db
-      DATABASE_COLLECTION: events_collection
-    networks:
-      - apps_net
-    depends_on:
-      - events-db-mongo
-
-  events-db-mongo:
-    image: mongo:7
-    container_name: events-mongo
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: mongo_user
-      MONGO_INITDB_ROOT_PASSWORD: mongo_password
-      MONGO_INITDB_DATABASE: events_db
-    ports:
-      - "27018:27017"   # optional, only if you want host access
-    volumes:
-      - events-db-mongo-data:/data/db
-    networks:
-      - apps_net
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    command: ["mongod", "--quiet"]
+    logging:
+      driver: "none"
 
   booking-service:
     build: ./services/booking_service
@@ -138,11 +105,54 @@ services:
     volumes:
       - booking-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U booking_user"]
+      test: ["CMD-SHELL", "pg_isready -U booking_user -d booking_db"]
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - apps_net
 
+  events-service:
+    build: ./services/events_service
+    container_name: events_service
+    ports:
+      - "8003:8003"
+    environment:
+      SERVER_PORT: 8003
+      MONGO_URI: mongodb://mongo_user:mongo_password@events-db-mongo:27017/events_db?authSource=admin
+      DATABASE_NAME: events_db
+      DATABASE_COLLECTION: events_collection
+      RABBITMQ_USER: appuser
+      RABBITMQ_PASSWORD: apppassword
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_QUEUE_SEATS: seats
+    networks:
+      - apps_net
+    depends_on:
+      - events-db-mongo
+      - rabbitmq
+
+  events-db-mongo:
+    image: mongo:7
+    container_name: events-mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo_user
+      MONGO_INITDB_ROOT_PASSWORD: mongo_password
+      MONGO_INITDB_DATABASE: events_db
+    ports:
+      - "27018:27017"   # optional, only if you want host access
+    volumes:
+      - events-db-mongo-data:/data/db
+    networks:
+      - apps_net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: ["mongod", "--quiet"]
 
   notifier-service:
     build: ./services/notifier_service

@@ -3,10 +3,12 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/piyushsharma67/events_booking/services/booking_service/domain"
 	"github.com/piyushsharma67/events_booking/services/booking_service/sqlc/sqlc_gen"
@@ -24,7 +26,7 @@ func NewPostgres() (*PostgresDb, error) {
 	}
 
 	// Retry ping until DB is ready
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		if err := db.Ping(); err == nil {
 			break
 		}
@@ -49,16 +51,24 @@ func buildDSN() string {
 		"?sslmode=disable"
 }
 
-func (p *PostgresDb) GenerateSeats(seats []domain.Seat) error {
+func (p *PostgresDb) GenerateSeatsInDB(seats []domain.Seat) error {
 	ctx := context.Background()
 	for _, s := range seats {
-		_, err := p.queries.InsertSeat(ctx, sqlc_gen.InsertSeatParams{
+		err := p.queries.InsertSeat(ctx, sqlc_gen.InsertSeatParams{
+			ID: uuid.New(),
+			EventID:    s.EventID,
+			RowID:      s.RowID,
+			SeatNumber: s.SeatNumber,
+			Status:     "AVAILABLE",
+		})
+		fmt.Println("the data to be pushed inside", sqlc_gen.InsertSeatParams{
 			EventID:    s.EventID,
 			RowID:      s.RowID,
 			SeatNumber: s.SeatNumber,
 			Status:     "AVAILABLE",
 		})
 		if err != nil {
+			fmt.Println("error during insertion", err.Error())
 			return err
 		}
 	}

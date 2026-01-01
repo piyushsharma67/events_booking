@@ -8,7 +8,14 @@ import (
 
 func (r *RepositoryStruct) GenerateSeats(
 	ctx context.Context,
-	seat []domain.Seat,
-) ([]domain.Seat, error){
-	return []domain.Seat{},nil
+	seats []domain.Seat,
+) ([]domain.Seat, error) {
+
+	// Call DB layer
+	if err := r.db.GenerateSeatsInDB(seats); err != nil {
+		return nil, err
+	}
+
+	// Return persisted seats
+	return seats, nil
 }
